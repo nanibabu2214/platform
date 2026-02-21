@@ -1,320 +1,309 @@
 openapi: 3.1.0
 info:
-  title: User Management API
-  description: Complete CRUD API following REST and OpenAPI 3.1 standards
+  title: HTTPBin Testing Service API
+  description: OpenAPI specification for httpbin.org - HTTP request/response testing service with all standard endpoints
   version: 1.0.0
+  termsOfService: https://httpbin.org
   contact:
-    name: API Support
-    email: support@example.com
+    name: HTTPBin
+    url: https://httpbin.org
 servers:
-  - url: https://api.example.com/v1
-    description: Production server
+  - url: https://httpbin.org
+  - url: http://httpbin.org
+  - url: http://localhost:80
+    description: Local Docker instance
 
 paths:
-  /users:
+  # Request Inspection (CRUD-like patterns)
+  /get:
     get:
-      summary: List users
-      tags: [Users]
+      summary: Inspect GET request
+      tags: [Request Inspection]
       parameters:
-        - name: limit
+        - name: key
           in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 20
-        - name: offset
+          schema: { type: string }
+        - name: test
           in: query
-          schema:
-            type: integer
-            minimum: 0
-            default: 0
-        - name: email
-          in: query
-          schema:
-            type: string
+          schema: { type: integer }
       responses:
         '200':
-          description: List of users
+          description: Echoes GET data, headers, URL
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  users:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/User'
-                  total:
-                    type: integer
-                  limit:
-                    type: integer
-                  offset:
-                    type: integer
-        '400':
-          $ref: '#/components/responses/BadRequest'
+                  args:
+                    type: object
+                  headers:
+                    type: object
+                  origin:
+                    type: string
+                  url:
+                    type: string
 
+  /post:
     post:
-      summary: Create a new user
-      tags: [Users]
+      summary: Inspect POST request
+      tags: [Request Inspection]
       requestBody:
-        required: true
         content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserCreate'
-      responses:
-        '201':
-          description: User created successfully
-          headers:
-            Location:
-              description: URL of the created resource
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '409':
-          description: User already exists
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /users/{id}:
-    get:
-      summary: Get user by ID
-      tags: [Users]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
+          application/json: { }
+          application/x-www-form-urlencoded: { }
+          multipart/form-data: { }
+          text/plain: { }
       responses:
         '200':
-          description: User details
+          description: Echoes POST data, headers, files
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: '#/components/schemas/RequestEcho'
 
+  /put:
     put:
-      summary: Replace user (full update)
-      tags: [Users]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
+      summary: Inspect PUT request
+      tags: [Request Inspection]
       requestBody:
-        required: true
         content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserUpdate'
+          application/json: { }
+          application/x-www-form-urlencoded: { }
       responses:
         '200':
-          description: User updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          $ref: '#/components/responses/Conflict'
+          $ref: '#/paths/~1post/post/responses/200'
 
+  /patch:
     patch:
-      summary: Partial update user
-      tags: [Users]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
+      summary: Inspect PATCH request
+      tags: [Request Inspection]
       requestBody:
-        required: true
         content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserPatch'
+          application/json: { }
       responses:
         '200':
-          description: User updated successfully
+          $ref: '#/paths/~1post/post/responses/200'
+
+  /delete:
+    delete:
+      summary: Inspect DELETE request
+      tags: [Request Inspection]
+      parameters:
+        - name: key
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Echoes DELETE data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: '#/components/schemas/RequestEcho'
 
-    delete:
-      summary: Delete user
-      tags: [Users]
+  /anything:
+    get:
+      summary: Catch-all GET handler
+      tags: [Request Inspection]
+      responses: { '200': { $ref: '#/paths/~1get/get/responses/200' } }
+    post:
+      summary: Catch-all POST handler
+      tags: [Request Inspection]
+      responses: { '200': { $ref: '#/paths/~1post/post/responses/200' } }
+    put: { responses: { '200': { $ref: '#/paths/~1put/put/responses/200' } } }
+    patch: { responses: { '200': { $ref: '#/paths/~1patch/patch/responses/200' } } }
+    delete: { responses: { '200': { $ref: '#/paths/~1delete/delete/responses/200' } } }
+
+  /anything/{extra}:
+    get:
+      summary: Catch-all with path param
+      tags: [Request Inspection]
       parameters:
-        - name: id
+        - name: extra
+          in: path
+          required: true
+          schema: { type: string }
+      responses: { '200': { $ref: '#/paths/~1get/get/responses/200' } }
+    parameters:
+      - name: extra
+        in: path
+        required: true
+        schema: { type: string }
+
+  # Authentication Testing (CRUD security patterns)
+  /basic-auth/{user}/{passwd}:
+    get:
+      summary: Basic Auth challenge
+      tags: [Authentication]
+      parameters:
+        - name: user
+          in: path
+          required: true
+          schema: { type: string }
+        - name: passwd
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Auth success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authenticated: { type: boolean, enum: [true] }
+                  user: { type: string }
+        '401':
+          description: Auth failed
+
+  /bearer:
+    get:
+      summary: Bearer token auth
+      tags: [Authentication]
+      responses:
+        '200':
+          description: Valid bearer token
+          content: { application/json: { schema: { $ref: '#/components/schemas/AuthSuccess' } } }
+        '401':
+          description: Invalid/missing token
+
+  /digest-auth/{qop}/{nc}/{cnonce}/{response}:
+    get:
+      summary: Digest auth challenge
+      tags: [Authentication]
+      parameters:
+        - name: qop
+          in: path
+          required: true
+          schema: { type: string }
+        - name: nc
+          in: path
+          required: true
+          schema: { type: string, pattern: '^[0-9a-f]{8}$' }
+        - name: cnonce
+          in: path
+          required: true
+          schema: { type: string }
+        - name: response
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Digest auth success
+          content: { application/json: { schema: { $ref: '#/components/schemas/AuthSuccess' } } }
+
+  # Status & Response Testing (CRUD response patterns)
+  /status/{codes}:
+    get:
+      summary: Custom HTTP status codes
+      tags: [Status Testing]
+      parameters:
+        - name: codes
           in: path
           required: true
           schema:
             type: string
+            pattern: '^[0-9]{3}(,[0-9]{3})*$'
+            example: '200,404,500'
       responses:
-        '204':
-          description: User deleted successfully
-        '404':
-          $ref: '#/components/responses/NotFound'
+        '200': { description: Multiple status codes returned }
+
+  /response-headers:
+    get:
+      summary: Custom response headers
+      tags: [Response Testing]
+      parameters:
+        - name: header
+          in: query
+          schema:
+            type: string
+            example: 'X-Test: value'
+      responses:
+        '200':
+          description: Echoes custom headers
+          headers:
+            X-Test: { schema: { type: string } }
+
+  # Client Info (Read operations)
+  /ip:
+    get:
+      summary: Client IP address
+      tags: [Client Info]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  origin: { type: string, example: '203.0.113.1' }
+
+  /headers:
+    get:
+      summary: Request headers
+      tags: [Client Info]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  headers: { type: object }
+
+  /user-agent:
+    get:
+      summary: User-Agent header
+      tags: [Client Info]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  'user-agent': { type: string }
 
 components:
   schemas:
-    User:
-      type: object
-      required: [id, email, name]
-      properties:
-        id:
-          type: string
-          format: uuid
-          readOnly: true
-          example: "123e4567-e89b-12d3-a456-426614174000"
-        email:
-          type: string
-          format: email
-          example: "user@example.com"
-        name:
-          type: string
-          example: "John Doe"
-        phone:
-          type: string
-          format: phone
-          example: "+1-202-555-0101"
-          nullable: true
-        status:
-          type: string
-          enum: [active, inactive, suspended]
-          default: active
-        createdAt:
-          type: string
-          format: date-time
-          readOnly: true
-          example: "2026-02-21T20:00:00Z"
-        updatedAt:
-          type: string
-          format: date-time
-          readOnly: true
-          example: "2026-02-21T20:00:00Z"
-      additionalProperties: false
-
-    UserCreate:
-      allOf:
-        - $ref: '#/components/schemas/UserBase'
-        - type: object
-          properties:
-            password:
-              type: string
-              writeOnly: true
-              minLength: 8
-          required: [password]
-
-    UserUpdate:
-      allOf:
-        - $ref: '#/components/schemas/UserBase'
-        - type: object
-          properties:
-            password:
-              type: string
-              writeOnly: true
-              minLength: 8
-              nullable: true
-
-    UserPatch:
+    RequestEcho:
       type: object
       properties:
-        name:
+        args:
+          type: object
+        data:
           type: string
-        phone:
+        files:
+          type: object
+        form:
+          type: object
+        headers:
+          type: object
+        json:
+          type: object
+        origin:
           type: string
-          format: phone
-          nullable: true
-        status:
+        url:
           type: string
-          enum: [active, inactive, suspended]
-        password:
-          type: string
-          writeOnly: true
-          minLength: 8
-      additionalProperties: false
-      minProperties: 1
 
-    UserBase:
+    AuthSuccess:
       type: object
-      required: [email, name]
       properties:
-        email:
-          type: string
-          format: email
-        name:
-          type: string
-        phone:
-          type: string
-          format: phone
-          nullable: true
-        status:
-          type: string
-          enum: [active, inactive, suspended]
-          default: active
-
-    Error:
-      type: object
-      required: [code, message]
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-        details:
-          type: array
-          items:
-            type: string
-
-  responses:
-    BadRequest:
-      description: Bad request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-
-    Conflict:
-      description: Conflict
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
+        authenticated: { type: boolean }
+        user: { type: string }
 
   securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-  security:
-    - bearerAuth: []
+    digestAuth:
+      type: http
+      scheme: digest
 
 security:
-  - bearerAuth: []
+  - {}  # No global auth required for testing service
