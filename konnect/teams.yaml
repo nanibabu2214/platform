@@ -1,1 +1,12 @@
 teams:
+  platform:
+    description: platform
+    services:
+      nanibabu2214/platform:
+        name: platform
+        git:
+          remote: https://github.com/nanibabu2214/platform.git
+        description: explore kong koctl tool
+        spec-path: openapi.yaml
+        prod-branch-name: main
+        dev-branch-name: konnect-orchestrator-init
