@@ -9,4 +9,4 @@ teams:
         description: explore kong koctl tool
         spec-path: openapi.yaml
         prod-branch-name: main
-        dev-branch-name: konnect-orchestrator-init
+        dev-branch-name: main
